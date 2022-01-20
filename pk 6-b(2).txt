@@ -1,0 +1,115 @@
+import random
+import math
+
+b=10
+p=previous_prime(2^b)
+
+while (is_prime(math.floor((p-1)/2))) == False:
+    p=previous_prime(p)
+
+q=math.floor((p-1)/2)
+print("liczba pierwsza p = ",p)
+print("dzielnik liczby p-1  q = ",q)
+
+Fp=GF(p)
+g=Fp.random_element()
+while True:
+    if g.multiplicative_order() ==q:
+        break
+    g=Fp.random_element()
+
+print("generator g = ",g)
+Fq=GF(q)
+print("generuje pare kluczy x(prywatny) oraz y(publiczny)")
+x=random.randint(2,q-1)
+y=Fp(g**x)
+print("klucz prywatny x =",x)
+print("klucz publiczny y =",y)
+print("losuje wiadomosc do dodpisu m wzglednie pierwsza z q")
+m=random.randint(2,q-1)
+while gcd(m,q)!=1:
+    m=random.randint(2,q-1)
+print("widomosc m = ",m)
+
+print("KROK 1")
+k=random.randint(2,q-1)
+print("k = ",k)
+
+
+print("KROK 2")
+
+R = Fp(g**k)
+while gcd(R,q)>1:
+    k=random.randint(2,q-1)
+    R = Fp(g**k)
+
+print("B wysyla k do A")
+
+print("KROK 3")
+
+if gcd(R,q)==1:
+    print("ok")
+else:
+    exit()
+
+print("KROK 4")
+
+a=Fq.random_element()
+b=Fq.random_element()
+if a ==b:
+    b=Fq.random_element()
+
+R_1=Fp(Fp(R**a)*Fp(g**b))
+
+print("KROK 5")
+
+while gcd(R_1,q) != 1:
+    a=Fq.random_element()
+    b=Fq.random_element()
+    if a ==b:
+        b=Fq.random_element()
+    R_1=Fp(Fp(R**a)*Fp(g**b))
+
+print("a = ",a)
+print("b = ",b)
+print("R_1 = ",R_1)
+
+R_1inv =Fq(R_1)
+R_1inv = 1/R_1inv
+    
+m_prim=Fq(Fq(m)*Fq(a)*Fq(R)*Fq(R_inv))
+
+print("m_prim = ",m_prim)
+
+print("m_prim od A do B")
+
+print("KROK 6")
+
+s_prim=Fq(Fq(R)*Fq(x)+Fq(k)*Fq(m_prim))
+print("s_prim = ",s_prim)    
+
+print("KROK 7")
+
+R_inv = Fq(R)
+R_inv = 1/R_inv
+
+s= Fq((Fq(s_prim)*Fq(R_1)*Fq(R_inv))+(Fq(b)*Fq(m)))
+print("s = ",s)
+r= Fq(R_1)
+print("r = ",r)
+
+
+tmp1=Fq(m)
+tmp1 =1/tmp1
+T=Fp(pow(pow(g,s,p)*pow(y,-r,p),tmp1,p))
+print(T)
+T=Fq(T)
+print(T)
+
+
+
+
+
+
+
+

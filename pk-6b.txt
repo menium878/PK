@@ -1,0 +1,135 @@
+import random
+import math
+p= previous_prime(2^20)
+
+while (is_prime(math.floor((p-1)/2)) != True):
+       p=previous_prime(p)
+q=math.floor((p-1)/2)
+print("liczba pierwsza p")
+print("p = ",p)
+print("duzy pierwszy dzielnik q liczby p-1")
+print("q = ",q)
+Fp=GF(p)
+
+g=Fp.random_element()
+while True:
+    if g.multiplicative_order() == q:
+        break
+    g=Fp.random_element()
+print("generator rzedu q")
+print("g = ",g)
+Fq = GF(q)
+print("generuje pare kluczy x(prywatny) oraz y(publiczny)")
+x=random.randint(2,q-1)
+y=Fp(pow(g,x,p))
+print("klucz prywatny x =",x)
+print("klucz publiczny y =",y)
+print("losuje wiadomosc do dodpisu m wzglednie pierwsza z q")
+m=random.randint(2,q-1)
+while gcd(m,q)!=1:
+    m=random.randint(2,q-1)
+print("wiadomosc m =",m)
+print("-----------------------")
+print("KROK 1")
+print("strona B wybiera losowo k")
+def krok_1(q):
+    k = random.randint(2,q-1)
+    return k
+k=krok_1(q)
+print("k = ",k)
+print("-----------------------")
+print("KROK 2")
+R=Fp(g**k)
+while gcd(R,q)>1:
+    k =krok_1(q)
+    R=Fp(g**k)
+print("obliczone R = ",R)
+print("strona B wysyla R do strony A")
+print("-----------------------")
+print("KROK 3")
+print("strona A sprawdza gcd(R,q) == 1")
+if gcd(R,q)==1:
+    print("gcd(R,q) == 1")
+else:
+    print("gcd(R,q) != 1")
+    exit()   
+print("-----------------------")
+print("KROK 4")
+print("strona A wybiera losowe a,b z Zq i oblicza R_1")
+def krok_4(q,g):
+    a=Fq.random_element()
+    b=Fq.random_element()
+    while a==b:
+        b=Fq.random_element()
+    R_1 = Fp(pow(R,a,p)*pow(g,b,p))
+    return R_1,a,b
+R_1,a,b=krok_4(q,g)
+print("R_1 = ",R_1)
+print("a = ",a)
+print("b = ",b)
+print("-----------------------")
+print("KROK 5")
+print("strona A sprawdza czy gcd(R_1,q) ==1 jesli nie wraca do KROK 4")
+while gcd(R_1,q)!= 1:
+    R_1,a,b=krok_4(q,g)
+print("R_1 = ",R_1)
+print("a = ",a)
+print("b = ",b)
+print("strona A oblicza m_prim i wysyla wynik do strony B")
+R_inv=Fq(R_1)
+R_inv=1/R_inv
+#print("inv ",R_inv)
+fir =Fq(pow(a,m,q))
+#print(fir)
+sec=Fq(pow(Fq(R),Fq(R_inv),q))
+#print(sec)
+m_prim = Fq(pow(fir,sec,q))
+print("obliczone m_prim")
+print("m_prim = ",m_prim)
+print("strona A wysyla m_prim do strony B")
+print("-----------------------")
+print("KROK 6")
+print("strona B wyznacza podpis s_prim")
+fir=Fq(pow(a,m,q))
+sec=Fq(pow(R,R_inv,q))
+s_prim =Fq(pow(fir,sec,q))
+#s_prim = Fq(Fq(R)*Fq(x)+Fq(k)*Fq(m_prim))
+print("obliczone s_prim = ",s_prim)
+print("strona B wysylla s_prim do strony A")
+print("-----------------------")
+print("KROK 7")
+print("strona A usuwa zaciemnienie")
+fir=Fq(pow(s_prim,R_1,q))
+sec=Fq(pow(fir,R_inv,q))
+thi=Fq(pow(b,m,q))
+s=Fq(sec+thi)
+
+#s=Fq(s_prim*Fq(R_1)*Fq(R_inv)+b*Fq(m))
+r = Fq(R_1)
+print("para podpisu (r,s) = ",r,s)
+
+
+print("-----------------------")
+print("WERYFIKACJA PODPISU")
+
+tmp1 = pow(g,s,p)
+tmp2 = pow(y,-r,p)
+tmp3 = pow(tmp1,tmp2,p)
+tmp4 = Fq(m)
+tmp4 = 1/tmp4
+tmp5 = Fp(pow(tmp3,tmp4,p))
+
+print(Fq(tmp5))
+
+
+
+tmp1=Fq(m)
+tmp1 =1/tmp1
+T=Fp(pow(pow(g,s,p)*pow(y,-r,p),tmp1,p))
+T=Fq(T)
+print(T)
+
+
+
+
+
